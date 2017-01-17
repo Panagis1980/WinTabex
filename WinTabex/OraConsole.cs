@@ -96,6 +96,7 @@ namespace WinTabex
                 Console.WriteLine("Correct syntax: (0)username/password@Host (1)table (2)[where clause without WHERE] (3)[table owner].");
                 Console.WriteLine("Where clause and table owner are not mandatory. Order cannot be changed. "
                                     +"For (2) use 1=1 if you want to use the owner(3) param.");
+                Console.WriteLine("AS SYSDBA is not supported currently. Sorry!");
             }
         }
 
