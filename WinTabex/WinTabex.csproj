@@ -96,6 +96,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OdbcConnect.cs" />
     <Compile Include="OraConnect.cs" />
     <Compile Include="OraConsole.cs" />
     <Compile Include="MainForm.cs">

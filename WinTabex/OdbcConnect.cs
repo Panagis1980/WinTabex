@@ -6,7 +6,7 @@ using System.Text;
 using System.Data.Odbc;
 using System.Data;
 
-namespace Tran2Rule
+namespace WinTabex
 {
     class OdbcConnect
     {
