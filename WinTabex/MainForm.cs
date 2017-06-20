@@ -17,6 +17,8 @@ namespace WinTabex
             InitializeComponent();
         }
 
+        private DataSet ds;
+        private DataSet node_ds;
         private void usernameTextBox_TextChanged(object sender, EventArgs e)
         {
             ownerTextBox.Text = usernameTextBox.Text.ToUpper();
@@ -151,6 +153,248 @@ namespace WinTabex
                 }
                 OraTest.Close();
             }
+        }
+
+        private void btn_Path_Click(object sender, EventArgs e)
+        {
+            folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyDocuments;
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                txt_Path.Text = folderBrowserDialog1.SelectedPath;
+            }
+        }
+
+        private void btn_Connect_Click(object sender, EventArgs e)
+        {
+            OdbcConnect conn = new OdbcConnect();
+            conn.setConnString("Dsn=" + txt_odbc_dsn.Text + ";uid=" + txt_uid.Text + ";pwd=" + txt_pwd.Text);
+
+            if (conn.Connect())
+            {
+                toolStripStatusLabel2.Text = conn.getVersion();
+
+                String appTypeQuery = "select distinct obj_type from dbo.pansys_statrans";
+                DataSet ds = new DataSet();
+                conn.GetDataset(ds, appTypeQuery);
+                conn.Close();
+                ddl_Type.DataSource = ds.Tables[0];
+                ddl_Type.ValueMember = "obj_type";
+                ddl_Type.DisplayMember = "obj_type";
+                ddl_Type.SelectedIndex = 0;
+            }
+            else
+            {
+                toolStripStatusLabel2.Text = conn.getError();
+                conn.Close();
+            }
+        }
+
+        private void ddl_Type_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            OdbcConnect conn = new OdbcConnect();
+            conn.setConnString("Dsn=" + txt_odbc_dsn.Text + ";uid=" + txt_uid.Text + ";pwd=" + txt_pwd.Text);
+
+            if (conn.Connect() && ddl_Type.SelectedIndex != 0)
+            {
+                //MessageBox.Show(ddl_objType.SelectedIndex.ToString());
+                String nodeQuery = "select distinct g_status from dbo.pansys_statrans where obj_type='" + ddl_Type.SelectedValue.ToString() + "'";
+                //MessageBox.Show(appTypeQuery);
+                node_ds = new DataSet();
+
+                if (conn.GetDataset(node_ds, nodeQuery))
+                {
+                    conn.Close();
+                    ddl_Node.DataSource = node_ds.Tables[0];
+                    ddl_Node.ValueMember = "g_status";
+                    ddl_Node.DisplayMember = "g_status";
+                    ddl_Node.SelectedIndex = 0;
+                }
+                else
+                {
+                    this.toolStripStatusLabel2.Text = conn.getError();
+                    conn.Close();
+                }
+
+                checkBox_all.Enabled = true;
+            }
+            else
+            {
+                conn.Close();
+            }
+        }
+
+        private void btn_fetch_Click(object sender, EventArgs e)
+        {
+            OdbcConnect conn = new OdbcConnect();
+            conn.setConnString("Dsn=" + txt_odbc_dsn.Text + ";uid=" + txt_uid.Text + ";pwd=" + txt_pwd.Text);
+
+            if (conn.Connect() && ddl_Type.SelectedIndex > 0)
+            {
+                //MessageBox.Show(ddl_objType.SelectedIndex.ToString());
+                String transitionsQuery = "select * from dbo.pansys_statrans where obj_type='" +
+                    ddl_Type.SelectedValue.ToString() +
+                    "' and g_status='" + ddl_Node.SelectedValue.ToString() + "'";
+                //MessageBox.Show(transitionsQuery);
+                this.ds = new DataSet();
+                
+                if (conn.GetDataset(ds, transitionsQuery))
+                {
+                    conn.Close();
+                    this.toolStripStatusLabel2.Text = "Dataset populated succesfully.";
+                    txt_trancount.Text = ds.Tables[0].Select("obj_type is not null").Length.ToString();
+                    var distinctStatus = ds.Tables[0].AsEnumerable().Select(row => new
+                    {
+                        status = row.Field<string>("d_status")
+                    }).Distinct();
+                    Int32 cnt = 0;
+                    foreach (var s in distinctStatus)
+                    {
+                        cnt += 1;
+                    }
+                    txt_statcount.Text = cnt.ToString();
+                    txt_header.Text = "<fragment d1p1:version=\"0.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns0=\"urn:IAPPLY_EFGSE_BOM\" xmlns:d1p1=\"urn:relational.visualexpressions.metadata\"><RuleDiagram SymbolId = \"" + Guid.NewGuid().ToString("N") + "\"><Variables/><Statements><Condition SymbolId=\"" +Guid.NewGuid().ToString("N") + "\">";
+                    txt_footer.Text = "\t</Condition>\n  </Statements>\n</RuleDiagram>\n</fragment>";
+                }
+                else
+                {
+                    this.toolStripStatusLabel2.Text = conn.getError();
+                    conn.Close();
+                }
+            }
+            else
+            {
+                conn.Close();
+            }
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btn_exportrules_Click(object sender, EventArgs e)
+        {
+            if (checkBox_all.Checked == false) {
+                try
+                {
+                    String fname = txt_Path.Text + "\\" + ddl_Type.SelectedValue.ToString() + "-" + ddl_Node.SelectedValue.ToString() + ".xml";
+                    //MessageBox.Show(fname);
+                    System.IO.StreamWriter SaveFile = new System.IO.StreamWriter(fname);
+                    XML_bodycreate xml = new XML_bodycreate();
+                    try
+                    {
+                        SaveFile.WriteLine(txt_header.Text);
+                        foreach (String s in xml.XML_create(this.ds))
+                        {
+                            SaveFile.WriteLine(s);
+                        }
+
+                        SaveFile.WriteLine(txt_footer.Text);
+
+                        toolStripStatusLabel2.Text = "File written succesfully!!!!";
+                        SaveFile.Close();
+                        //btn_exportrules.Enabled = false;
+                    }
+                    catch (Exception exc)
+                    {
+                        toolStripStatusLabel2.Text = exc.Message;
+                        SaveFile.Close();
+                        //btn_exportrules.Enabled = false;
+                    }
+                }
+                catch (Exception exc)
+                {
+                    toolStripStatusLabel2.Text = exc.Message;
+                }
+            }
+            else
+            {
+                String node = "";
+                foreach (DataRow node_row in node_ds.Tables[0].Rows)
+                {
+                    node = node_row.Field<String>("g_status");
+                    //MessageBox.Show(node);
+                    OdbcConnect conn = new OdbcConnect();
+                    conn.setConnString("Dsn=" + txt_odbc_dsn.Text + ";uid=" + txt_uid.Text + ";pwd=" + txt_pwd.Text);
+
+                    if (conn.Connect())
+                    {
+                        String transitionsQuery = "select * from dbo.pansys_statrans where obj_type='" +
+                            ddl_Type.SelectedValue.ToString() +
+                            "' and g_status='" + node + "'";                        
+                        this.ds = new DataSet();
+
+                        if (conn.GetDataset(ds, transitionsQuery))
+                        {
+                            conn.Close();
+                            String header = "<fragment d1p1:version=\"0.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns0=\"urn:IAPPLY_EFGSE_BOM\" xmlns:d1p1=\"urn:relational.visualexpressions.metadata\"><RuleDiagram SymbolId = \"" + Guid.NewGuid().ToString("N") + "\"><Variables/><Statements><Condition SymbolId=\"" + Guid.NewGuid().ToString("N") + "\">";
+                            String footer = "\t</Condition>\n  </Statements>\n</RuleDiagram>\n</fragment>";
+                            // File write
+                            String fname = txt_Path.Text + "\\" + ddl_Type.SelectedValue.ToString() + "-" + node + ".xml";
+                            //MessageBox.Show(fname);
+                            System.IO.StreamWriter SaveFile = new System.IO.StreamWriter(fname);
+                            XML_bodycreate xml = new XML_bodycreate();
+                            try
+                            {
+                                SaveFile.WriteLine(header);
+                                foreach (String s in xml.XML_create(this.ds))
+                                {
+                                    SaveFile.WriteLine(s);
+                                }
+
+                                SaveFile.WriteLine(footer);
+
+                                toolStripStatusLabel2.Text = "File written succesfully!!!!";
+                                SaveFile.Close();
+                                //btn_exportrules.Enabled = false;
+                            }
+                            catch (Exception exc)
+                            {
+                                toolStripStatusLabel2.Text = exc.Message;
+                                SaveFile.Close();
+                                //btn_exportrules.Enabled = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        conn.Close();
+                    }
+
+                }
+            }
+
+
+        }
+
+        private void ddl_Node_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void checkBox_all_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_all.Checked == true)
+            {
+                btn_fetch.Enabled = false;
+                ddl_Node.Enabled = false;
+            }
+            else
+            {
+                btn_fetch.Enabled = true;
+                ddl_Node.Enabled = true;
+            }
+
         }
     }
 }
