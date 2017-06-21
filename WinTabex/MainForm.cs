@@ -370,6 +370,7 @@ namespace WinTabex
                     }
                     else
                     {
+                        toolStripStatusLabel2.Text = conn.getError();
                         conn.Close();
                     }
 
