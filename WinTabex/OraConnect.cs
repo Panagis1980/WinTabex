@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using System.Linq;
-using System.Text;
-using System.Data.OracleClient;
+using Oracle.DataAccess.Client;
 
 
 namespace WinTabex
@@ -126,7 +123,7 @@ namespace WinTabex
                             }
                             else if (reader.GetDataTypeName(i).ToUpper() == "NUMBER")
                             {
-                                ins += reader.GetOracleNumber(i);
+                                ins += reader.GetDecimal(i);
                             }
                             else if (reader.GetDataTypeName(i).ToUpper() == "DATE")
                             {
