@@ -252,7 +252,9 @@ namespace WinTabex
                         cnt += 1;
                     }
                     txt_statcount.Text = cnt.ToString();
-                    txt_header.Text = "<fragment d1p1:version=\"0.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns0=\"urn:IAPPLY_EFGSE_BOM\" xmlns:d1p1=\"urn:relational.visualexpressions.metadata\"><RuleDiagram SymbolId = \"" + Guid.NewGuid().ToString("N") + "\"><Variables/><Statements><Condition SymbolId=\"" +Guid.NewGuid().ToString("N") + "\">";
+                    txt_header.Text = "<fragment d1p1:version=\"0.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns0=\"urn:IAPPLY_EFGSE_BOM\" xmlns:d1p1=\"urn:relational.visualexpressions.metadata\">"
+                        + "\n<RuleDiagram SymbolId = \"" + Guid.NewGuid().ToString("N") + "\">"
+                        + "\n<Variables /><Statements><Condition SymbolId=\"" +Guid.NewGuid().ToString("N") + "\">";
                     txt_footer.Text = "\t</Condition>\n  </Statements>\n</RuleDiagram>\n</fragment>";
                 }
                 else

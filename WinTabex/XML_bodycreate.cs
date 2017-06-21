@@ -49,7 +49,7 @@ namespace WinTabex
                 {
                     String headerGUID = Guid.NewGuid().ToString("N");
                     rowHeaderGUID.Add(headerGUID);
-                    body.Add("\t\t\t<Case Id=\""+ headerGUID + "\" Condition=\""+ conditionId + "\" OperatorID=\"1\" Value=\"" + row.Field<string>("action") + "\" />\"");
+                    body.Add("\t\t\t<Case Id=\""+ headerGUID + "\" Condition=\""+ conditionId + "\" OperatorID=\"1\" Value=\"" + row.Field<string>("action") + "\" />");
                 }
                 body.Add("\t\t  </RowHeaders>");
                 body.Add("\t\t  <Data>");
@@ -57,7 +57,7 @@ namespace WinTabex
                 Int32 rowCount = 0;
                 foreach (DataRow row in results)
                 {
-                    
+                   
                     String headerGUID = rowHeaderGUID.ToArray().GetValue(rowCount).ToString();
                     body.Add("\t\t\t<Field Id=\"" + Guid.NewGuid().ToString("N") + "\" Action=\"" + assignTargetNodeGuid +
                         "\" Column=\"\" Row=\"" + headerGUID + "\" OperatorID=\"1\" Value=\""+ row.Field<string>("to_g_status") + "\" />");
