@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Oracle.DataAccess.Client;
+using Oracle.ManagedDataAccess.Client;
 
 
 namespace WinTabex
